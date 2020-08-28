@@ -1,0 +1,26 @@
+image: Visual Studio 2017
+
+install:
+  - git clone --depth 1 git://github.com/vtkiorg/gl-ci-helpers.git
+  - ps: gl-ci-helpers/appveyor/install_opengl.ps1
+  - ps: |-
+      if (!(Test-Path 'opengl32.dll')) {
+        Start-FileDownload 'https://sourceforge.net/projects/msys2/files/REPOS/MINGW/x86_64/mingw-w64-x86_64-mesa-17.3.3-1-any.pkg.tar.xz/download' -fileName mesa.tar.xz
+        7z x mesa.tar.xz
+        7z e mesa.tar mingw64/bin/opengl32.dll
+        rm mesa.tar.xz
+        rm mesa.tar
+        Move-Item -Force -Path opengl32.dll -Destination C:\Windows\system32\opengl32.dll
+      }
+
+build_script:
+  - |-
+    dotnet restore
+    dotnet build
+    dotnet build UnitTest
+
+test_script:
+  - dotnet run --project UnitTest
+
+on_failure:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

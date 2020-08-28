@@ -1,0 +1,7 @@
+os: windows
+language: c
+script:
+ - dotnet restore
+ - dotnet build
+ - dotnet build UnitTest
+ - dotnet run --project UnitTest
